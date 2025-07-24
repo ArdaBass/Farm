@@ -2,136 +2,75 @@
 #include <fstream>
 #include <string>
 
+const int MAX_SIZE = 40;
+
 int main() {
-
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f;
-    int g;
-    int h;
-    int j;
-    int k;
-    int l;
-
-
-    int year;
-    int step;
-    int bos;
-
     std::string fileName;
-
     std::cin >> fileName;
 
     std::ifstream file(fileName);
-
-
-
-
-
-    int initialX;
-    int initialY;
-    int finalX;
-    int finalY;
-
-    int sizeX;
-    int sizeY;
-
-    file >> sizeX >> sizeY;
-
-
-
-    int plantArray[40][40];
-    int prevPlantArray[40][40];
-
-
-    file >> year >> step;
-
-
-    for (c = 0; c < sizeY; c++){
-
-        for ( d = 0; d < sizeX; d++){
-
-            plantArray[c][d] = 0;
-            prevPlantArray[c][d] = 0;
-        }
+    if (!file) {
+        std::cerr << "Error opening file: " << fileName << std::endl;
+        return 1;
     }
 
+    int width, height;
+    file >> width >> height;
 
-    for (g = year; g < 2018; g++){
+    int plantArray[MAX_SIZE][MAX_SIZE] = {0};
+    int prevPlantArray[MAX_SIZE][MAX_SIZE] = {0};
 
+    int year, stepCount;
+    file >> year >> stepCount;
 
+    for (int currentYear = year; currentYear < 2018; ++currentYear) {
+        // Read and apply planting steps
+        for (int step = 0; step < stepCount; ++step) {
+            int x1, y1, x2, y2;
+            file >> x1 >> y1 >> x2 >> y2;
 
-        while(step != 0){
-
-            file >> initialX >> initialY >> finalX >> finalY;
-
-
-
-            for(e = initialY; e <= finalY; e++){
-
-                for(f = initialX; f <= finalX; f++){
-
-                   plantArray[e][f] = plantArray[e][f] + 1;
+            for (int y = y1; y <= y2; ++y) {
+                for (int x = x1; x <= x2; ++x) {
+                    plantArray[y][x]++;
                 }
             }
-            step = step - 1;
         }
 
-
-        if ( year << g){
-            for (k = 0; k < sizeY; k++){
-
-                for (l = 0; l < sizeX; l++){
-
-                    if(prevPlantArray[k][l] == plantArray[k][l] && plantArray[k][l] != 0){
-
-                        plantArray[k][l] = plantArray[k][l] - 1;
+        // Apply aging rule
+        if (year < currentYear) {
+            for (int y = 0; y < height; ++y) {
+                for (int x = 0; x < width; ++x) {
+                    if (plantArray[y][x] != 0 &&
+                        plantArray[y][x] == prevPlantArray[y][x]) {
+                        plantArray[y][x]--;
                     }
                 }
             }
-
         }
 
-
-
-        for(h = 0; h < sizeY; h++){
-
-            for( j = 0; j < sizeX; j++){
-
-                prevPlantArray[h][j] = plantArray[h][j];
+        // Store current state
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                prevPlantArray[y][x] = plantArray[y][x];
             }
         }
 
-        if ( g < 2017){
-
-            file >> bos >> step;
+        // Prepare for next year
+        if (currentYear < 2017) {
+            int unused;
+            file >> unused >> stepCount;
         }
     }
 
-
-
-
-
-
-    for(a = 0; a < sizeY; a++){
-
-        for( b = 0; b < sizeX; b++){
-
-            if( b == sizeX-1){
-
-                std::cout << plantArray[a][b] << std::endl;
-
-            }
-            else{
-
-                std::cout << plantArray[a][b] << " ";
-            }
+    // Output the final array
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            std::cout << plantArray[y][x];
+            if (x < width - 1)
+                std::cout << " ";
         }
+        std::cout << std::endl;
     }
-
 
     return 0;
 }
